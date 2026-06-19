@@ -1,0 +1,21 @@
+{
+	"name" : "Teste (job0)",
+	"data_dir" : "~/.local/data/craudiowebot/job0",
+	"actions" : [
+		{"type" : "navigate", "value" : "", "id" : "principal"},
+		{"type" : "sleep", "value" : 5},
+		{"type" : "exists", "wait" : 5, "xpath" :"//*[@id=\"nv_linkentrar\"]", "yes" :[
+			{"type" : "navigate", "value" : "https://exemplo.com/painel/index.php"},
+			{"type" : "key", "xpath" :"//*[@id=\"txt_email\"]" , "value" : "", "id" : "email"},
+			{"type" : "key", "xpath" :"//*[@id=\"txt_password\"]" , "value" : "", "id" : "password" },
+			{"type" : "press", "xpath" :"//*[@type=\"password\"]" },
+			{"type" : "sleep", "value" : 5}
+		] , "not" : [
+			{"type" : "navigate", "value" : "https://exemplo.com/painel/cursos.php"}
+		]},
+		{"type" : "exit", "wait" : 5}
+		
+	]
+}
+
+

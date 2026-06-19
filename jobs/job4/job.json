@@ -1,0 +1,37 @@
+{
+	"name" : "Plano de teste painel - cursos e TCCs do professor Fulano (salva em sqlite)",
+	"data_dir" : "~/.local/data/craudiowebot/painel-admin",
+	"actions" : [
+		{"type" : "navigate", "value" : "https://painel.exemplo.com/login", "id" : "principal"},
+		{"type" : "sleep", "value" : 4},
+
+		{"type" : "exists", "wait" : 6, "xpath" : "//*[@id=\"email\"]",
+			"yes" : [
+				{"type" : "key",   "xpath" : "//*[@id=\"email\"]",    "value" : "", "id" : "email"},
+				{"type" : "key",   "xpath" : "//*[@id=\"password\"]", "value" : "", "id" : "password"},
+				{"type" : "press", "xpath" : "//*[@id=\"password\"]"},
+				{"type" : "sleep", "value" : 5}
+			],
+			"not" : [
+				{"type" : "sleep", "value" : 1}
+			]
+		},
+
+		{"type" : "navigate", "value" : "https://painel.exemplo.com/admin/usuarios?q=Fulano", "id" : "busca"},
+		{"type" : "sleep", "value" : 4},
+
+		{"type" : "click", "xpath" : "//a[@title=\"Editar\"]", "id" : "abrir_edicao"},
+		{"type" : "sleep", "value" : 5, "id" : "ler_cursos"},
+		{"type" : "sleep", "value" : 2},
+
+		{"type" : "navigate", "value" : "https://painel.exemplo.com/admin/usuarios?q=Fulano"},
+		{"type" : "sleep", "value" : 4},
+
+		{"type" : "click", "xpath" : "//button[@title=\"Entrar como este usuário\"]", "id" : "impersonar"},
+		{"type" : "sleep", "value" : 5},
+
+		{"type" : "navigate", "value" : "https://painel.exemplo.com/professor/tccs", "id" : "tccs"},
+		{"type" : "sleep", "value" : 5},
+		{"type" : "finish"}
+	]
+}

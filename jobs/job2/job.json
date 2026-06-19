@@ -1,0 +1,28 @@
+{
+	"name" : "Login exemplo",
+	"data_dir" : "~/.local/data/craudiowebot/google",
+	"actions" : [
+		{"type" : "navigate", "value" : "https://www.google.com/", "id" : "principal"},
+		{"type" : "sleep", "value" : 5},
+		{"type" : "exists", "wait" : 5, "xpath" :"//a[contains(@aria-label,'gmail.com')]", "yes" :[],
+			"not" : [
+
+				{"type" : "navigate", "value" : "https://accounts.google.com/signin"},
+				{"type" : "sleep", "value" : 5},
+
+				{"type" : "key", "xpath" :"//*[@id=\"identifierId\"]" , "value" : "", "id" : "email"},
+				{"type" : "press", "xpath" :"//*[@id=\"identifierId\"]" },
+				{"type" : "sleep", "value" : 5},
+
+				{"type" : "key", "xpath" :"//*[@type=\"password\"]" , "value" : "", "id" : "password"},
+				{"type" : "press", "xpath" :"//*[@type=\"password\"]" }
+		]},
+		{"type" : "sleep", "value" : 5},
+		{"type" : "navigate", "value" : "https://claude.ai/new", "id" : "new"},
+		{"type" : "key", "xpath" :"//div[@contenteditable=\"true\"]" , "value" : "", "id" : "console"},
+		{"type" : "press", "xpath" :"//div[@contenteditable=\"true\"]" , "id" : "claude_keypress"},
+		{"type" : "sleep", "value" : 120},
+		{"type" : "finish"}
+
+	]
+}

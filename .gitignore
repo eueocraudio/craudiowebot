@@ -1,0 +1,17 @@
+# perfis persistentes gerados por job (cache/cookies/storage do browser)
+jobs/*/profile/
+
+# segredos (credenciais ficam em variaveis de ambiente; .env nao versionado)
+.env
+
+# dados pessoais raspados (resultado gerado por job4)
+jobs/*/resultado.sqlite
+
+# dados pessoais raspados por scripts consumidores do --servir
+chamada.sqlite
+
+# artefatos
+__pycache__/
+*.pyc
+pagina.html
+.venv/
