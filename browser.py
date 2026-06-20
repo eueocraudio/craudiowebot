@@ -475,6 +475,51 @@ class JobRunner(QObject):
                     w, QKeyEvent(et, int(key),
                                  Qt.KeyboardModifier.NoModifier, ch))
 
+    def _do_click_real(self, action):
+        """Clique TRUSTED (isTrusted=true): acha o CENTRO do elemento (via JS) e
+        envia QMouseEvents REAIS ao focusProxy da view -> passam pelo pipeline de
+        input nativo do Chromium. Use quando el.click()/_do_click (sintetico) NAO
+        submete: botoes de formulario React (Settle de fundar aldeia, lapis de
+        renomear). Mesma assinatura de 'click' (xpath)."""
+        xp = json.dumps(action["xpath"])
+        js = JS_BUSCA_XPATH + (
+            "(function(){var el=__byXPath(%s);if(!el)return 'NAO_ENCONTRADO';"
+            "el.scrollIntoView({block:'center',inline:'center'});"
+            "var r=el.getBoundingClientRect();"
+            "return JSON.stringify({x:r.left+r.width/2,y:r.top+r.height/2});"
+            "})();" % xp)
+
+        def depois(res):
+            if res and res != "NAO_ENCONTRADO":
+                try:
+                    p = json.loads(res)
+                    self._clicar_trusted(p["x"], p["y"])
+                except Exception as e:
+                    self.log("    ERRO click_real: %s" % e)
+                    res = "NAO_ENCONTRADO"
+            self._apos_js("OK" if res and res != "NAO_ENCONTRADO"
+                          else "NAO_ENCONTRADO")
+
+        self.view.page().runJavaScript(js, depois)
+
+    def _clicar_trusted(self, x_css, y_css):
+        """Clica em (x_css, y_css) [coords CSS da viewport] enviando QMouseEvents
+        reais ao focusProxy. Aplica o zoomFactor da view (o conteudo e' escalado:
+        coord_widget = coord_css * zoom)."""
+        from PySide6.QtGui import QMouseEvent
+        from PySide6.QtCore import QEvent, QPointF
+        w = self.view.focusProxy()
+        if w is None:
+            self.log("    AVISO: sem focusProxy p/ clique trusted")
+            return
+        z = self.view.zoomFactor() or 1.0
+        loc = QPointF(x_css * z, y_css * z)
+        glob = QPointF(w.mapToGlobal(loc.toPoint()))
+        for et in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
+            QApplication.sendEvent(w, QMouseEvent(
+                et, loc, glob, Qt.MouseButton.LeftButton,
+                Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier))
+
     def _do_exists(self, action):
         # Espera ate 'wait' segundos pelo elemento do xpath. Se aparecer,
         # executa os filhos de 'yes'; se esgotar o tempo, os de 'not'.
