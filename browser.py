@@ -464,16 +464,19 @@ class JobRunner(QObject):
             self.log("    AVISO: sem focusProxy p/ digitacao trusted")
             return
         mapa = {"-": Qt.Key.Key_Minus, ".": Qt.Key.Key_Period,
-                ",": Qt.Key.Key_Comma, "/": Qt.Key.Key_Slash}
+                ",": Qt.Key.Key_Comma, "/": Qt.Key.Key_Slash,
+                "\n": Qt.Key.Key_Return, "\r": Qt.Key.Key_Return}
         for ch in str(texto):
             if ch.isdigit():
                 key = Qt.Key.Key_0 + (ord(ch) - ord("0"))
             else:
                 key = mapa.get(ch, Qt.Key.Key_unknown)
+            # Enter (Return) submete: envia sem 'texto' (senão insere quebra)
+            txt = "" if ch in ("\n", "\r") else ch
             for et in (QEvent.Type.KeyPress, QEvent.Type.KeyRelease):
                 QApplication.sendEvent(
                     w, QKeyEvent(et, int(key),
-                                 Qt.KeyboardModifier.NoModifier, ch))
+                                 Qt.KeyboardModifier.NoModifier, txt))
 
     def _do_click_real(self, action):
         """Clique TRUSTED (isTrusted=true): acha o CENTRO do elemento (via JS) e
