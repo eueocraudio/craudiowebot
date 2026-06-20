@@ -432,6 +432,49 @@ class JobRunner(QObject):
         """
         self.view.page().runJavaScript(js, self._apos_js)
 
+    def _do_type_real(self, action):
+        """Digitacao TRUSTED (isTrusted=true): foca o input (via JS) e envia
+        QKeyEvents REAIS ao focusProxy da view -> passam pelo pipeline de input
+        nativo do Chromium, ao contrario de _do_key (runJavaScript sintetico). Use
+        quando setar o value NAO habilita o botao: formularios React/V2 (mercado
+        'send', Settle de fundar aldeia, submit do renomear) so validam input
+        trusted. Mesma assinatura de 'key' (xpath + value)."""
+        xp = json.dumps(action["xpath"])
+        val = str(action.get("value", ""))
+        js = JS_BUSCA_XPATH + (
+            "(function(){var el=__byXPath(%s);if(!el)return 'NAO_ENCONTRADO';"
+            "el.focus();try{el.setSelectionRange(0,(el.value||'').length);}"
+            "catch(e){if(el.select)el.select();}return 'OK';})();" % xp)
+
+        def depois(status):
+            if status == "OK":
+                self._digitar_trusted(val)
+            self._apos_js(status)
+
+        self.view.page().runJavaScript(js, depois)
+
+    def _digitar_trusted(self, texto):
+        """Envia o texto como QKeyEvents reais ao widget que o Chromium usa para
+        input (focusProxy da QWebEngineView). O elemento ja deve estar focado/
+        selecionado. Cobre digitos e -.,/ (suficiente p/ coords e recursos)."""
+        from PySide6.QtGui import QKeyEvent
+        from PySide6.QtCore import QEvent
+        w = self.view.focusProxy()
+        if w is None:
+            self.log("    AVISO: sem focusProxy p/ digitacao trusted")
+            return
+        mapa = {"-": Qt.Key.Key_Minus, ".": Qt.Key.Key_Period,
+                ",": Qt.Key.Key_Comma, "/": Qt.Key.Key_Slash}
+        for ch in str(texto):
+            if ch.isdigit():
+                key = Qt.Key.Key_0 + (ord(ch) - ord("0"))
+            else:
+                key = mapa.get(ch, Qt.Key.Key_unknown)
+            for et in (QEvent.Type.KeyPress, QEvent.Type.KeyRelease):
+                QApplication.sendEvent(
+                    w, QKeyEvent(et, int(key),
+                                 Qt.KeyboardModifier.NoModifier, ch))
+
     def _do_exists(self, action):
         # Espera ate 'wait' segundos pelo elemento do xpath. Se aparecer,
         # executa os filhos de 'yes'; se esgotar o tempo, os de 'not'.
